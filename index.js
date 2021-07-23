@@ -60,7 +60,7 @@ client.on('message', function(message) {
         }
     }
 
-    executeWithProbability(0.1, doReply);
+    executeWithProbability(0.03, doReply);
         
 });
 //   https://discord.com/api/oauth2/authorize?client_id=868101846290546718&permissions=2151016512&scope=bot%20applications.commands
