@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/cartwheee11/User-Support/issues"
   },
-  "homepage": "https://github.com/cartwheee11/User-Support#readme"
+  "homepage": "https://github.com/cartwheee11/User-Support#readme",
+  "dependencies": {
+    "axios": "^0.21.1"
+  }
 }
