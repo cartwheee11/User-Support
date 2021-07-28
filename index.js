@@ -43,7 +43,7 @@ function getAnswer(question, prediction) {
 }
 
 function moodinize(string) {
-    return (string + '))0 епта ептыть').trim();
+    return ('— ' + string + ' епта ептыть))0\n— ').trim();
 }
 
 async function getPrediction(text) {
@@ -75,17 +75,31 @@ function clearMentions(string) {
     return string.replace(exp, '').trim();
 }
 
+function clearExcess(string) {
+    // string = clearMentions(string);
+    let exp = /^([^—\n]*)/mi;
+    string = string.match(exp);
+    // console.log(string);
+    return string[0];
+    
+}
+
+
 client.on('message', function(message) {
     if(message.author.bot == true) return;
-    console.log(message.content);
+    console.log('сообщение пользователя: ' + message.content);
 
     function doReply() {
         let string = clearMentions(message.content);
         let moodinizeString = moodinize(string);
+        console.log('затравка: ' + moodinizeString);
         getPrediction(moodinizeString).then(prediction => {
             prediction = prediction.trim().replace(moodinizeString, '').trim();
+            console.log('предсказание: ' + prediction);
+            prediction = clearExcess(prediction);
+            console.log('предсказание с очисткой: ' + prediction);
             message.reply(prediction);
-        })
+        }).catch(console.log);
     }
 
     if(isBotMentioned(message)) {
