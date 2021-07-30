@@ -6,6 +6,19 @@ const axios = require('axios');
 
 client.login(config.BOT_TOKEN);
 
+
+const BOOR_PHRASES = [
+    ' Епта)0',
+    ' Епть',
+    ' Епты бля)0',
+    ', слышь епта)))',
+    ', епты, ыыыыыыы',
+    " блять",
+    " нахуй)0",
+    " нахуй блять 😃",
+    ", ты нахуй"
+]
+
 const EMOJIS = [
     '🍎',
     '🍊',
@@ -31,6 +44,8 @@ function getRandomArrayElement(arr) {
     return arr.slice()[rand];
 }
 
+
+
 function executeWithProbability(prob, cb) {
     let len = 1/prob;
     let rand1 = Math.floor(Math.random() * len);
@@ -43,7 +58,7 @@ function getAnswer(question, prediction) {
 }
 
 function moodinize(string) {
-    return ('— ' + string + ' епта ептыть))0\n— ').trim();
+    return (string + ' епты блять)){end}\n—').trim();
 }
 
 async function getPrediction(text) {
@@ -79,26 +94,68 @@ function clearExcess(string) {
     // string = clearMentions(string);
     let exp = /^([^—\n]*)/mi;
     string = string.match(exp);
-    // console.log(string);
+
     return string[0];
     
 }
 
+async function getContext(message) {
+    return new Promise(async function(resolve, reject) {
+        const LIMIT = 3;
+        let messages = await message.channel.messages.fetch({ limit: LIMIT });
+        let result = ''
+        let count = 0
+        let messagesArray = Array.from(await messages).reverse();
 
-client.on('message', function(message) {
+        await messagesArray.forEach((elem) => {
+            count++
+            let messageBody = elem[1].content
+            // let messageBody = contextMessage.content;
+            messageBody = clearMentions(messageBody).trim();
+            messageBody = '— ' + messageBody + getRandomArrayElement(BOOR_PHRASES) + '\n';
+            result += messageBody;
+            if (count == LIMIT - 1) {
+                result += '—'
+                resolve( result );
+            }
+        })
+    })
+    
+}
+
+client.on('message', async function(message) {
     if(message.author.bot == true) return;
-    console.log('сообщение пользователя: ' + message.content);
 
-    function doReply() {
-        let string = clearMentions(message.content);
-        let moodinizeString = moodinize(string);
-        console.log('затравка: ' + moodinizeString);
-        getPrediction(moodinizeString).then(prediction => {
-            prediction = prediction.trim().replace(moodinizeString, '').trim();
-            console.log('предсказание: ' + prediction);
-            prediction = clearExcess(prediction);
-            console.log('предсказание с очисткой: ' + prediction);
-            message.reply(prediction);
+
+    // getContext(message).then(context => {
+
+    // });
+
+
+    async function doReply() {
+        let messageBody = clearMentions(message.content);
+        let moodinizeString = moodinize(messageBody);
+        let context = await getContext(message)
+        let seedWithContext = ( await context ).trim() + ' ' + moodinizeString.trim();
+
+        console.log('——————————————————————————————————————————');
+        console.log(JSON.stringify(seedWithContext));
+        console.log('..........................................');
+        console.log(seedWithContext);
+        console.log('——————————————————————————————————————————');
+
+        getPrediction(await seedWithContext).then(async function(prediction) {
+            prediction = prediction.replace(/[^]*{end}\n—/, '').trim();
+
+            console.log('——————————————————————————————————————————');
+            console.log(JSON.stringify(prediction));
+            console.log('..........................................');
+            console.log(prediction);
+            console.log('——————————————————————————————————————————');
+
+            prediction = clearExcess(await prediction);
+
+            message.reply(await prediction);
         }).catch(console.log);
     }
 
